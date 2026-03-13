@@ -5,10 +5,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const snap = require('./config/snap');
 const errorHandler = require('./middlewires/error.middlewire');
-const {createUser, loginUser} = require('./controllers/createUserService');
-const handleTransfer = require('./controllers/checkOutController');
+const {createUser, loginUser} = require('./controllers/user.controller');
+const handleTransfer = require('./controllers/topup.controller');
 const rateLimit = require('./utils/counter')
-const handleMidtransNotification = require('./controllers/callbackController');
+const handleMidtransNotification = require('./controllers/callback.Controller');
 const app = express();
 const port = process.env.PORT;
 app.use(express.json())
