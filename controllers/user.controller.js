@@ -1,10 +1,10 @@
-const {addUser, login} = require('../services/createUser');
+const {addUser, login} = require('../services/user');
 const asynchandler = require('../utils/asyncHandler');
 
 const createUser = asynchandler(async(req, res) => {
-    const {name,password, email} = req.body;
-    const result = await addUser({name, password, email});
-    res.status(200).json({message: "berhassil menambahkan user", result});
+    const {name,password, email, phone} = req.body;
+    const result = await addUser({name, password, email, phone});
+    res.status(201).json({message: "berhassil menambahkan user", result});
 })
 
 const loginUser = async(req, res, next) => {

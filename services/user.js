@@ -4,30 +4,39 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const client = require('../config/redis');
 
-const addUser = async ({name, password,email}) => {
-    if(!name) throw new Error("nama diisi");
-    if(password === undefined) throw new Error("password wajib diisi");
-    if(!email) throw new Error("email diisi");
+const addUser = async ({name, password,email, phone}) => {
+    if(!name) throw new Error("nama harus diisi");
+    if(password === undefined) throw new Error("password harus diisi");
+    if(!email) throw new Error("email harus diisi");
+    if(!phone) throw new Error("nomor telepomn harus diisi");
+    
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const existingUser = await pool.query(
+    const existingEmail = await pool.query(
         'SELECT * FROM users WHERE email = $1',
         [email] 
       );
-    if (existingUser.rows.length > 0) throw new apiError(400, "email sudah digunakan", email)
+    if (existingEmail.rows.length > 0) throw new apiError(409, "email sudah digunakan", email)
+
+    const existingPhone = await pool.query(
+        'SELECT * FROM users WHERE phne = $1',
+        [phone] 
+      );
+    if (existingPhone.rows.length > 0) throw new apiError(409, "nomor telepon sudah digunakan", phone)
+
 
     try {
       const result = await pool.query(
-        'INSERT INTO users (nama,saldo, password, email) VALUES ($1, $2, $3, $4) RETURNING *',
-        [name, 0, hashedPassword, email] 
+        'INSERT INTO users (nama,saldo, password, email, phone) VALUES ($1, $2, $3, $4 $5) RETURNING *',
+        [name, 0, hashedPassword, email, phone] 
     );
     const id = result.rows[0].id;
     const nama = result.rows[0].nama;
     return ({id: id, nama: nama})
     } catch (err) {
-      throw new apiError(450, "gagal menambahkan user", {name, email})
+      throw new apiError(400, "gagal menambahkan user", {name, email})
     }
 };
 
@@ -41,12 +50,12 @@ const login = async ({email, password}) => {
       [email] 
     );
     if (user.rows.length === 0) {
-        throw new apiError(404, "user tidak ditemukan", email)
+        throw new apiError(400, "user tidak ditemukan", email)
     }
 
     const hash = user.rows[0].password;
     const verify = await bcrypt.compare(password, hash)
-    if(!verify) throw new apiError(404, "email atau password salah", email)
+    if(!verify) throw new apiError(400, "email atau password salah", email)
 
     const id = user.rows[0].id;
     const email = user.rows[0].email;
