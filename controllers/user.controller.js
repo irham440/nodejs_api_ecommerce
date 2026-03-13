@@ -1,5 +1,5 @@
-const {addUser, login} = require("../services/createUser");
-const asynchandler = require("../utils/asyncHandler");
+const {addUser, login} = require('../services/createUser');
+const asynchandler = require('../utils/asyncHandler');
 
 const createUser = asynchandler(async(req, res) => {
     const {name,password, email} = req.body;

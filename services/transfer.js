@@ -1,4 +1,4 @@
-const pool = require("../config/db");
+const pool = require('../config/db');
 
 const transfer = async ({senderId, receiverId, amount}) => {
     if(!senderId) throw new Error("senderId diisi");

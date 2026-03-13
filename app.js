@@ -18,8 +18,8 @@ app.use(cors());
 
 
 // Route untuk buat pembayaran
-app.post('/top-up', handleTopUp);
-app.post('/midtrans-notification', handleMidtransNotification);
+app.post("/top-up", handleTopUp);
+app.post("/midtrans-notification", handleMidtransNotification);
 
 // Route untuk user
 app.post("/user", createUser);

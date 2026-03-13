@@ -1,8 +1,8 @@
-const pool = require("../config/db");
-const apiError = require("../utils/apiError")
-const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt")
-const client = require("../config/redis")
+const pool = require('../config/db');
+const apiError = require('../utils/apiError');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const client = require('../config/redis');
 
 const addUser = async ({name, password,email}) => {
     if(!name) throw new Error("nama diisi");
