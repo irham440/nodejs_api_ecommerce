@@ -21,7 +21,7 @@ const addUser = async ({name, password,email, phone}) => {
     if (existingEmail.rows.length > 0) throw new apiError(409, "email sudah digunakan", email)
 
     const existingPhone = await pool.query(
-        'SELECT * FROM users WHERE phne = $1',
+        'SELECT * FROM users WHERE phone = $1',
         [phone] 
       );
     if (existingPhone.rows.length > 0) throw new apiError(409, "nomor telepon sudah digunakan", phone)
@@ -29,14 +29,14 @@ const addUser = async ({name, password,email, phone}) => {
 
     try {
       const result = await pool.query(
-        'INSERT INTO users (nama,saldo, password, email, phone) VALUES ($1, $2, $3, $4 $5) RETURNING *',
+        'INSERT INTO users (nama,saldo, password, email, phone) VALUES ($1, $2, $3, $4, $5) RETURNING *',
         [name, 0, hashedPassword, email, phone] 
     );
     const id = result.rows[0].id;
     const nama = result.rows[0].nama;
     return ({id: id, nama: nama})
     } catch (err) {
-      throw new apiError(400, "gagal menambahkan user", {name, email})
+      throw err
     }
 };
 
