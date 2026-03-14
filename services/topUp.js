@@ -23,18 +23,18 @@ const notificationTopup = async ({ idUser, amount}) => {
         const transaction = await snap.createTransaction(parameter);
         return (transaction);
     } catch (err) {
-        throw new apiError(400, "gagal melakukan top-up", {idUser, amount});
+        throw new apiError(400, "gagal membuat transaksi", {idUser, amount});
     }
 };    
 
 
 const topUp = async ({idUser, amount}) =>{
     const result = await pool.query(
-        'UPDATE users SET saldo = saldo + $1 WHERE id = $2 RETURNING saldo',
+        'UPDATE users SET saldo = saldo + $1 WHERE id = $2 RETURNING saldo, nama',
         [amount, idUser]
-    )
-    console.log(result.rows[0])
-    return ({saldo: result.rows[0].saldo})
+    );
+    const {saldo, nama} = result.rows[0];
+    return {saldo, idUser, nama};
 }
 
 

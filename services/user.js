@@ -32,9 +32,8 @@ const addUser = async ({name, password,email, phone}) => {
         'INSERT INTO users (nama,saldo, password, email, phone) VALUES ($1, $2, $3, $4, $5) RETURNING *',
         [name, 0, hashedPassword, email, phone] 
     );
-    const id = result.rows[0].id;
-    const nama = result.rows[0].nama;
-    return ({id: id, nama: nama})
+    const {id} = result.rows[0];
+    return {id, name, email, phone};
     } catch (err) {
       throw err
     }
@@ -46,19 +45,18 @@ const login = async ({email, password}) => {
 
    try {
     const user = await pool.query(
-      'SELECT password FROM users WHERE email = $1',
+      'SELECT password, id FROM users WHERE email = $1',
       [email] 
     );
     if (user.rows.length === 0) {
         throw new apiError(400, "user tidak ditemukan", email)
     }
 
-    const hash = user.rows[0].password;
-    const verify = await bcrypt.compare(password, hash)
+    const {password: hashedPassword} = user.rows[0];
+    const verify = await bcrypt.compare(password, hashedPassword)
     if(!verify) throw new apiError(400, "email atau password salah", email)
 
-    const id = user.rows[0].id;
-    const email = user.rows[0].email;
+    const {id} = user.rows[0];
     const token = await jwt.sign(
       {id: id, email: email},
       process.env.JWT_SECRET,
@@ -67,10 +65,25 @@ const login = async ({email, password}) => {
 
     const key = `login:${email}`
     await client.del(key)
-    return token;
+    return {token, id, email};
   } catch (err) {
     throw err;
   }
 }
 
-module.exports = { addUser, login };
+
+const getProfile = async ({id}) => {
+  try {
+    const user = await pool.query(
+      'SELECT id, nama, email, phone, saldo FROM users WHERE id = $1',
+      [id] 
+    );
+    if (user.rows.length === 0) {
+        throw new apiError(400, "user tidak ditemukan", id)
+    }
+    return user.rows[0];
+  } catch (err) {
+    throw err;
+  }
+}
+module.exports = { addUser, login, getProfile };

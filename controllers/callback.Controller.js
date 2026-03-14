@@ -18,9 +18,8 @@ const handleMidtransNotification = async (req, res, next) => {
             console.log(idUser,"   ", amount);
             
             const result = await topUp({idUser: Number(idUser), amount: Number(amount)});
-
-            // Kirim respon dan BERHENTI (return)
-            return res.status(200).json({ message: "Transfer berhasil", result });
+            const {saldo, nama} = result;
+            return res.status(200).json({ success: true, message: "Transfer berhasil", data: {idUser, nama, saldo} });
         } 
         
         if (status === 'pending') {
