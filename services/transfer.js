@@ -1,9 +1,19 @@
-const pool = require('../config/db');
+const pool = require('../config/db')
+const apiError = require("../utils/apiError")
 
-const transfer = async ({senderId, receiverId, amount}) => {
+const transfer = async ({senderId, receiverPhone, amount}) => {
     if(!senderId) throw new Error("senderId diisi");
-    if(!receiverId) throw new Error("receiverId diisi");
+    if(!receiverPhone) throw new Error("receiverPhone diisi");
     if(amount === undefined || isNaN(amount)) throw new Error("amount harus angka");
+
+    receiverPhone = receiverPhone.replace(0, "+62"); // Ganti 0 di awal dengan 62 untuk format internasional
+    const phone = await pool.query(
+        'SELECT id FROM users WHERE phone = $1',
+        [receiverPhone]
+    );
+    console.log(phone)
+    if(phone.rows.length === 0) throw new apiError(400, "nomor telepon penerima tidak ditemukan", receiverPhone);
+    const receiverId = phone.rows[0].id;
 
   // Ambil satu koneksi khusus dari pool
   const client = await pool.connect();
@@ -49,4 +59,4 @@ const transfer = async ({senderId, receiverId, amount}) => {
   }
 };
 
-module.exports = transfer;
+module.exports = {transfer};

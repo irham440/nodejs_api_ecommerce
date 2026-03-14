@@ -6,6 +6,7 @@ const cors = require('cors');
 const errorHandler = require('./middlewires/error.middlewire');
 const {registerHandler, loginHandler, profileHandler} = require('./controllers/user.controller');
 const handleTopUp = require('./controllers/topUp.Controller');
+const handleTransfer = require('./controllers/transfer.Controller');
 const rateLimit = require('./utils/counter')
 const handleMidtransNotification = require('./controllers/callback.Controller');
 const app = express();
@@ -20,6 +21,7 @@ app.use(cors());
 // Route untuk buat pembayaran
 app.post("/top-up/:id", handleTopUp);
 app.post("/midtrans-notification", handleMidtransNotification);
+app.post("/transfer/:id", handleTransfer);
 
 // Route untuk user
 app.post("/register", registerHandler);
