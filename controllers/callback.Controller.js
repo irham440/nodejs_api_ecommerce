@@ -1,5 +1,5 @@
 const snap = require('../config/snap');
-const topUp = require('../services/topUp')
+const {topUp} = require('../services/topUp')
 
 const handleMidtransNotification = async (req, res, next) => {
     try {

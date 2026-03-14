@@ -23,7 +23,7 @@ const notificationTopup = async ({ idUser, amount}) => {
         const transaction = await snap.createTransaction(parameter);
         return (transaction);
     } catch (err) {
-        throw new apiError(400, "gagal membuat transaksi", {idUser, amount});
+        throw err;
     }
 };    
 

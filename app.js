@@ -8,6 +8,7 @@ const {registerHandler, loginHandler, profileHandler} = require('./controllers/u
 const handleTopUp = require('./controllers/topUp.Controller');
 const handleTransfer = require('./controllers/transfer.Controller');
 const rateLimit = require('./utils/counter')
+const {authMiddlewire} = require('./middlewires/authMiddlewire');
 const handleMidtransNotification = require('./controllers/callback.Controller');
 const app = express();
 const port = process.env.PORT;
@@ -19,14 +20,14 @@ app.use(cors());
 
 
 // Route untuk buat pembayaran
-app.post("/top-up/:id", handleTopUp);
+app.post("/top-up",authMiddlewire, handleTopUp);
 app.post("/midtrans-notification", handleMidtransNotification);
-app.post("/transfer/:id", handleTransfer);
+app.post("/transfer/",authMiddlewire, handleTransfer);
 
 // Route untuk user
 app.post("/register", registerHandler);
 app.post("/login", rateLimit({maxRequest: 3, windowSecond: 120, keyPrefix: "login"}),loginHandler);
-app.get("/profile/:id", profileHandler);
+app.get("/profile", authMiddlewire, profileHandler);
 app.use(errorHandler);
 
 app.listen(port, () => {

@@ -2,12 +2,10 @@ const {transfer} = require("../services/transfer");
 
 const handelTransfer = async(req, res, next) => {
     try {
-        const senderId = req.params.id;
-        console.log(senderId)
+        const senderId = req.user.id;
         const {receiverPhone, amount} = req.body;
-        console.log(receiverPhone,"    ", amount)
         const result = await transfer({senderId: Number(senderId), receiverPhone, amount: Number(amount)});
-        res.status(200).json({success: true, message: "berhasil membuat transaksi", result});
+        res.status(200).json({success: true, message: "Transfer berhasil", result});
     } catch (err) {
         next(err)
     }

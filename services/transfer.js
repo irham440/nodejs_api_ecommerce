@@ -4,14 +4,19 @@ const apiError = require("../utils/apiError")
 const transfer = async ({senderId, receiverPhone, amount}) => {
     if(!senderId) throw new Error("senderId diisi");
     if(!receiverPhone) throw new Error("receiverPhone diisi");
-    if(amount === undefined || isNaN(amount)) throw new Error("amount harus angka");
+    if(amount === undefined || isNaN(amount) || amount <= 0) throw new Error("amount harus angka");
 
-    receiverPhone = receiverPhone.replace(0, "+62"); // Ganti 0 di awal dengan 62 untuk format internasional
+    receiverPhone = receiverPhone.replace(/^0/, "+62");
+    const sender = await pool.query(
+        'SELECT id FROM users WHERE id = $1',
+        [senderId]
+    );
+    if(sender.rows.length === 0) throw new apiError(400, "pengirim tidak ditemukan", senderId);
     const phone = await pool.query(
         'SELECT id FROM users WHERE phone = $1',
         [receiverPhone]
     );
-    console.log(phone)
+    if(senderId === phone.rows[0].id) throw new apiError(400, "tidak bisa transfer ke diri sendiri", receiverPhone);
     if(phone.rows.length === 0) throw new apiError(400, "nomor telepon penerima tidak ditemukan", receiverPhone);
     const receiverId = phone.rows[0].id;
 
@@ -30,7 +35,7 @@ const transfer = async ({senderId, receiverPhone, amount}) => {
 
     // Cek apakah saldo cukup atau user ada
     if (potongSaldo.rowCount === 0) {
-      throw new Error('Saldo tidak cukup atau user tidak ditemukan');
+      throw new Error('Saldo tidak cukup');
     }
 
     // 3. Tambah saldo penerima
@@ -40,13 +45,18 @@ const transfer = async ({senderId, receiverPhone, amount}) => {
     );
 
     if (tambahSaldo.rowCount === 0) {
-      throw new Error('Penerima tidak ditemukan');
+      throw new Error('gagal menambahkan saldo ke penerima');
     }
 
     // 4. SIMPAN PERUBAHAN (Jika semua lancar)
     await client.query('COMMIT');
-
-    return { message: 'Transfer berhasil', sender: potongSaldo.rows[0], receiver: tambahSaldo.rows[0] };
+    const result = (p) => {
+      const {id, nama, saldo } = p.rows[0]
+      return {id, nama, saldo}
+    }
+    const sender = result(potongSaldo);
+    const receiver = result(tambahSaldo);
+    return {pengirim: sender, receiver: receiver };
 
   } catch (err) {
     // 5. BATALKAN SEMUA (Jika ada error di tengah jalan)

@@ -21,7 +21,7 @@ const loginHandler = async(req, res, next) => {
 
 const profileHandler = async(req, res, next) => {
     try {
-        const id = req.params.id;
+        const id = req.user.id;
         const result = await getProfile({id: Number(id)});
         res.status(200).json({success: true,message: "berhasil mengambil profile", data: result});
     } catch (err) {
