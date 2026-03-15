@@ -1,4 +1,4 @@
-const {addUser, login, getProfile} = require('../services/user');
+const {addUser, login, getProfile, updateUser} = require('../services/user');
 const asynchandler = require('../utils/asyncHandler');
 
 const registerHandler = asynchandler(async(req, res) => {
@@ -28,4 +28,17 @@ const profileHandler = async(req, res, next) => {
         next(err)
     }
 }   
-module.exports = {registerHandler, loginHandler, profileHandler};
+
+const updateHandler = async(req, res, next) => {
+    try {
+        const {name, email} = req.body;
+        const id = req.users.id;
+        const result = await updateUser({id: Number(id),  name, email})
+        res.status(201).json({success: true, message: "berhasil update data", result})
+    } catch (err) {
+        next(err)
+    }
+}
+
+
+module.exports = {registerHandler, loginHandler, profileHandler, updateHandler};

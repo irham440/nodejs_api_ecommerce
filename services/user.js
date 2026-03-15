@@ -18,13 +18,13 @@ const addUser = async ({name, password,email, phone}) => {
         'SELECT * FROM users WHERE email = $1',
         [email] 
       );
-    if (existingEmail.rows.length > 0) throw new apiError(409, "email sudah digunakan", email)
+    if (existingEmail.rows.length > 0) throw new apiError(409, "email sudah digunakan", {email})
 
     const existingPhone = await pool.query(
         'SELECT * FROM users WHERE phone = $1',
         [phone] 
       );
-    if (existingPhone.rows.length > 0) throw new apiError(409, "nomor telepon sudah digunakan", phone)
+    if (existingPhone.rows.length > 0) throw new apiError(409, "nomor telepon sudah digunakan", {phone})
 
 
     try {
@@ -48,13 +48,11 @@ const login = async ({email, password}) => {
       'SELECT password, id FROM users WHERE email = $1',
       [email] 
     );
-    if (user.rows.length === 0) {
-        throw new apiError(400, "user tidak ditemukan", email)
-    }
+    if (user.rows.length === 0) throw new apiError(400, "user tidak ditemukan", {email})
 
     const {password: hashedPassword} = user.rows[0];
     const verify = await bcrypt.compare(password, hashedPassword)
-    if(!verify) throw new apiError(400, "email atau password salah", email)
+    if(!verify) throw new apiError(400, "email atau password salah", {email})
 
     const {id} = user.rows[0];
     const token = await jwt.sign(
@@ -73,17 +71,34 @@ const login = async ({email, password}) => {
 
 
 const getProfile = async ({id}) => {
-  try {
+  key = `${id}:getProfil`;
+  const cache = await client.get(key ,`{email: ${email}, nama: ${nama} saldo: ${saldo}}`, {EX: 600})
+  if(cache) {
+    const result = par
+  }
+    try {
     const user = await pool.query(
       'SELECT id, nama, email, phone, saldo FROM users WHERE id = $1',
       [id] 
     );
-    if (user.rows.length === 0) {
-        throw new apiError(400, "user tidak ditemukan", id)
-    }
     return user.rows[0];
   } catch (err) {
     throw err;
   }
 }
-module.exports = { addUser, login, getProfile };
+
+const updateUser = async ({id, name, email}) => {
+  try {
+    const user = await pool.query(
+      'UPDATE users SET nama = $1, email = $2 WHERE id = $3 RETURNING nama, email',
+      [name,email, id]
+    );
+    return {name, email}
+  } catch (err) {
+    throw err;
+    
+  }
+}
+
+
+module.exports = { addUser, login, getProfile, updateUser };
