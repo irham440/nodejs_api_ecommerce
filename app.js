@@ -29,7 +29,7 @@ app.post("/transfer",authMiddlewire, handleTransfer);
 app.get("/products", produkHandler);
 app.post("/order",authMiddlewire, handlePembelian);
 app.post("/pay", handlePay);
-app.get("/pesanan", authMiddlewire, pesananHandler);
+app.get("/orders", authMiddlewire, pesananHandler);
 
 // Route untuk user
 app.post("/register", registerHandler);
