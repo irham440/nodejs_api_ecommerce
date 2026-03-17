@@ -32,6 +32,9 @@ app.post("/pay", handlePay);
 app.get("/orders", authMiddlewire, pesananHandler);
 
 // Route untuk user
+app.get("/", (req, res) => {
+    res.status(200).json({success: true, message: "hello vercel, supabase, redis"});
+})
 app.post("/register", registerHandler);
 app.post("/login", rateLimit({maxRequest: 3, windowSecond: 120, keyPrefix: "login"}),loginHandler);
 app.get("/profile", authMiddlewire, profileHandler);
