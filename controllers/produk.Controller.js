@@ -1,4 +1,4 @@
-const {getProducts, pembelian, notificationBeli} = require('../services/produk');
+const {getProducts, pembelian, notificationBeli, pay, getOrder} = require('../services/produk');
 const snap = require('../config/snap');
 
 const produkHandler = async(req, res, next) => {
@@ -16,23 +16,31 @@ const produkHandler = async(req, res, next) => {
 
 const handlePembelian = async(req, res, next) => {
     try {
-        const {productId, jumlah, metode} = req.body;
+        const {productId, jumlah } = req.body;
         const userId = req.user.id;
-        // Logika pembelian produk, misalnya memeriksa stok, mengurangi saldo pengguna, dll.
-        // Misalnya:
-        if (metode === "saldo") {
-            const result = await pembelian({userId, productId, jumlah});
-            res.status(200).json({success: true, message: "berhasil membeli produk", data:result});
-
-        } else if (metode === "midtrans") {   
-            const result = await notificationBeli({userId, productId, jumlah});
-            res.status(200).json({success: true, message: "berhasil membeli produk dengan midtrans", data: result});
-        } else {
-            return res.status(400).json({success: false, message: "metode pembayaran tidak valid"});
-        }
+        const result = await pembelian({userId, productId, jumlah});
+        res.status(200).json({success: true, message: "berhasil membeli produk", data: result});
+    } catch (err) {
+        next(err)
+    }
+}
+const handlePay = async(req, res, next) => {
+    try {
+        const {orderId} = req.body;
+        const result = await pay({orderId: Number(orderId)});
+        res.status(200).json({success: true, message: "berhasil melakukan pembayaran", data: result});
+    } catch (err) {
+        next(err)
+    }
+}
+const pesananHandler = async(req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const result = await getOrder({userId: Number(userId)});
+        res.status(200).json({success: true, message: "berhasil mengambil data pesanan", data: result});
     } catch (err) {
         next(err)
     }
 }
 
-module.exports = {produkHandler, handlePembelian};
+module.exports = {produkHandler, handlePembelian, handlePay, pesananHandler};

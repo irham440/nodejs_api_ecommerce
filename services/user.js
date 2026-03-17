@@ -2,7 +2,7 @@ const pool = require('../config/db');
 const apiError = require('../utils/apiError');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const client = require('../config/redis');
+const redisClient = require('../config/redis');
 
 const addUser = async ({name, password,email, phone}) => {
     if(!name) throw new Error("nama harus diisi");
@@ -62,7 +62,7 @@ const login = async ({email, password}) => {
     )
 
     const key = `login:${email}`
-    await client.del(key)
+    await redisClient.del(key)
     return {token, id, email};
   } catch (err) {
     throw err;
@@ -72,15 +72,22 @@ const login = async ({email, password}) => {
 
 const getProfile = async ({id}) => {
   key = `${id}:getProfil`;
-  const cache = await client.get(key ,`{email: ${email}, nama: ${nama} saldo: ${saldo}}`, {EX: 600})
+  const cache = await redisClient.get(key)
   if(cache) {
-    const result = par
+    const user = JSON.parse(cache);
+    console.log("dari cache")
+    const ttl = await redisClient.ttl(key);
+    console.log(`ttl: ${ttl} detik`)
+    return user;
   }
     try {
     const user = await pool.query(
       'SELECT id, nama, email, phone, saldo FROM users WHERE id = $1',
       [id] 
     );
+    if (user.rows.length === 0) throw new apiError(400, "user tidak ditemukan", {id})
+    console.log("dari database")
+    await redisClient.setEx(key, 600, JSON.stringify(user.rows[0]))
     return user.rows[0];
   } catch (err) {
     throw err;

@@ -7,7 +7,7 @@ const errorHandler = require('./middlewires/error.middlewire');
 const {registerHandler, loginHandler, profileHandler, updateHandler} = require('./controllers/user.controller');
 const handleTopUp = require('./controllers/topUp.Controller');
 const handleTransfer = require('./controllers/transfer.Controller');
-const {produkHandler, handlePembelian} = require('./controllers/produk.Controller'); 
+const {produkHandler, handlePembelian, handlePay, pesananHandler} = require('./controllers/produk.Controller'); 
 const rateLimit = require('./utils/counter')
 const {authMiddlewire} = require('./middlewires/authMiddlewire');
 const handleMidtransNotification = require('./controllers/callback.Controller');
@@ -27,7 +27,9 @@ app.post("/transfer",authMiddlewire, handleTransfer);
 
 // Route untuk produk
 app.get("/products", produkHandler);
-app.post("/beli", authMiddlewire, handlePembelian);
+app.post("/order",authMiddlewire, handlePembelian);
+app.post("/pay", handlePay);
+app.get("/pesanan", authMiddlewire, pesananHandler);
 
 // Route untuk user
 app.post("/register", registerHandler);
