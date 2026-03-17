@@ -38,6 +38,4 @@ app.get("/profile", authMiddlewire, profileHandler);
 app.post("/update", authMiddlewire, updateHandler)
 app.use(errorHandler);
 
-app.listen(port, () => {
-    console.log(`Server berjalan di http://localhost:${port}`);
-})
+module.exports = app; 
