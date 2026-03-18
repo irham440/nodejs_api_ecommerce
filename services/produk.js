@@ -79,7 +79,7 @@ const pay = async ({orderId}) => {
     try {
         await client.query('BEGIN');
         const {rows} = await client.query(
-            'SELECT saldo FROM users WHERE id = (SELECT user_id FROM orders WHERE id = $1)',
+            'SELECT saldo, id FROM users WHERE id = (SELECT user_id FROM orders WHERE id = $1)',
             [orderId]
         );
         const statusOrder = await client.query(
@@ -91,6 +91,7 @@ const pay = async ({orderId}) => {
         if(statusOrder.rows[0].status === "paid") throw new Error("order sudah dibayar");
         if (rows.length === 0) throw new Error("user tidak ditemukan");
         const saldo = rows[0].saldo;
+        const id = rows[0].id
         const total_price = statusOrder.rows[0].total_price;
         const saldoNum = Number(saldo);
         const totalPriceNum = Number(total_price);
@@ -110,6 +111,8 @@ const pay = async ({orderId}) => {
             ['processing', orderId]
         );
         await client.query('COMMIT');
+        const chacheKey = `profile:${id}`
+        await redisClient.del(chacheKey)
     } catch (err) {
         await client.query('ROLLBACK');
         throw err;
