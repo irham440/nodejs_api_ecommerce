@@ -11,7 +11,7 @@ const handleMidtransNotification = async (req, res, next) => {
         const name = metadata.name;
         const status = statusResponse.transaction_status;
         console.log(`Pesan masuk: Order ${statusResponse.order_id} statusnya ${status}`);
-        console.log(name)
+        console.log('metadata:', metadata)
 
         if (status === 'settlement' && name === 'Top-up') {
             const idUser = metadata.idUser;
@@ -20,6 +20,7 @@ const handleMidtransNotification = async (req, res, next) => {
             
             const result = await topUp({idUser: Number(idUser), amount: Number(amount)});
             const {saldo, nama} = result;
+            console.log('topUp result:', result)
             return res.status(200).json({ success: true, message: "Transfer berhasil", data: {idUser, nama, saldo} });
         } 
         if (status === 'settlement' && name === 'bayar-produk') {
