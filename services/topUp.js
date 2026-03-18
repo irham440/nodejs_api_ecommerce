@@ -33,11 +33,6 @@ const topUp = async ({idUser, amount}) =>{
         'UPDATE users SET saldo = saldo + $1 WHERE id = $2 RETURNING saldo, nama',
         [amount, idUser]
     );
-    const keys = await redisClient.keys(`profile:${idUser}`);
-    if (keys.length > 0) {
-        await redisClient.del(keys);
-        console.log(`Berhasil hapus ${keys.length} cache produk`);
-     }
     
     const {saldo, nama} = result.rows[0];
     return {saldo, idUser, nama};
