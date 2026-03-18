@@ -56,6 +56,25 @@ const transfer = async ({senderId, receiverPhone, amount}) => {
     }
     const sender = result(potongSaldo);
     const receiver = result(tambahSaldo);
+    const key = `${idUser}:getProfil`;
+    const cached = await redisClient.get(key);
+    let profileObj;
+    if (cached) {
+        try {
+            profileObj = JSON.parse(cached);
+        } catch (e) {
+            profileObj = null;
+        }
+    }
+    if (!profileObj) {
+                // create a minimal profile object if cache empty
+        profileObj = { id: sender.id, nama: sender.nama, saldo: sender.saldo };
+    } else {
+                // update existing cached profile fields
+        profileObj.saldo = sender.saldo;
+        profileObj.nama = sender.nama;
+    }
+    await redisClient.set(key, JSON.stringify(profileObj));
     return {pengirim: sender, receiver: receiver };
 
   } catch (err) {

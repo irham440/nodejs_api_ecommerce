@@ -151,7 +151,7 @@ const getOrder = async ({userId}) => {
         }
 
         const result = await pool.query(
-            'SELECT o.id, o.total_price, o.status, oi.product_id, oi.quantity, oi.price FROM orders o JOIN order_items oi ON o.id = oi.order_id WHERE o.user_id = $1',
+            'SELECT o.id, o.total_price, o.status, oi.product_id, oi.quantity, oi.price, p.name FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN produk p ON oi.product_id = p.id WHERE o.user_id = $1',
             [userId]
         );
         if(result.rows.length === 0) throw new Error("pesanan tidak ditemukan");
