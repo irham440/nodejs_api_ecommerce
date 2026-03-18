@@ -63,6 +63,8 @@ const pembelian = async ({userId, productId, jumlah}) => {
             }
 
             await client.query('COMMIT');
+            const keyOrders = `orders:${userId}`
+            await redisClient.del(keyOrders)
             return [{order_id: orderRows[0].id, total: totalPrice}];
         } catch (err) {
             await client.query('ROLLBACK');
