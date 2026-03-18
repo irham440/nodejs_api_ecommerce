@@ -141,14 +141,6 @@ const notificationBeli = async ({ idUser, productId, jumlah}) => {
 
 const getOrder = async ({userId}) => {
     try {
-        const key = `order:${userId }`;
-        const cache = await redisClient.get(key);
-        if (cache) {
-            console.log("dari cache")
-            const ttl = await redisClient.ttl(key); 
-            console.log(`ttl: ${ttl} detik`)
-            return JSON.parse(cache);
-        }
 
         const result = await pool.query(
             'SELECT o.id, o.total_price, o.status, oi.product_id, oi.quantity, oi.price, p.name FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN produk p ON oi.product_id = p.id WHERE o.user_id = $1',
@@ -157,7 +149,6 @@ const getOrder = async ({userId}) => {
         if(result.rows.length === 0) throw new Error("pesanan tidak ditemukan");
         
         console.log("dari database")
-        await redisClient.setEx(key, 60, JSON.stringify(result.rows));
         return result.rows;
     } catch (err) {
         throw err;
