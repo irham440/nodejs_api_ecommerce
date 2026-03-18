@@ -71,6 +71,12 @@ const login = async ({email, password}) => {
 
 
 const getProfile = async ({id}) => {
+    const chacheKey = `profile:${id}`;
+    const cache = await redisClient.get(chacheKey);
+    if(cache){
+        console.log("dari cache")
+        return JSON.parse(cache);
+    }
     try {
     const user = await pool.query(
       'SELECT id, nama, email, phone, saldo FROM users WHERE id = $1',
@@ -78,6 +84,7 @@ const getProfile = async ({id}) => {
     );
     if (user.rows.length === 0) throw new apiError(400, "user tidak ditemukan", {id})
     console.log("dari database")
+    await redisClient.set(chacheKey, JSON.stringify(user.rows[0], {EX: 120}))
     return user.rows[0];
   } catch (err) {
     throw err;

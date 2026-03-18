@@ -1,4 +1,5 @@
-const pool = require('../config/db')
+const pool = require('../config/db');
+const redisClient = require('../config/redis');
 const apiError = require("../utils/apiError")
 
 const transfer = async ({senderId, receiverPhone, amount}) => {
@@ -19,7 +20,8 @@ const transfer = async ({senderId, receiverPhone, amount}) => {
     if(senderId === phone.rows[0].id) throw new apiError(400, "tidak bisa transfer ke diri sendiri", receiverPhone);
     if(phone.rows.length === 0) throw new apiError(400, "nomor telepon penerima tidak ditemukan", receiverPhone);
     const receiverId = phone.rows[0].id;
-
+    const cacheKey = `profile:${senderId}`;
+    await redisClient.del(cacheKey)
   // Ambil satu koneksi khusus dari pool
   const client = await pool.connect();
 

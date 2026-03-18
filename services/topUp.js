@@ -1,6 +1,7 @@
 const pool = require('../config/db')
 const snap = require('../config/snap');
-const apiError = require("../utils/apiError")
+const apiError = require('../utils/apiError')
+const redisClient = require('../config/redis')
 
 const notificationTopup = async ({ idUser, amount}) => {
     
@@ -29,6 +30,9 @@ const notificationTopup = async ({ idUser, amount}) => {
 
 
 const topUp = async ({idUser, amount}) =>{
+    const cacheKey = `profile:${idUser}`
+    await redisClient.del(cacheKey)
+    console.log("Cache profile dihapus karena ada transaksi");
     const result = await pool.query(
         'UPDATE users SET saldo = saldo + $1 WHERE id = $2 RETURNING saldo, nama',
         [amount, idUser]
