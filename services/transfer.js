@@ -1,4 +1,5 @@
-const pool = require('../config/db')
+const pool = require('../config/db');
+const redisClient = require('../config/redis');
 const apiError = require("../utils/apiError")
 
 const transfer = async ({senderId, receiverPhone, amount}) => {
