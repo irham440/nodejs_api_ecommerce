@@ -56,6 +56,12 @@ const pembelian = async ({userId, productId, jumlah}) => {
                 'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
                 [orderRows[0].id, productId, jumlah, price]
             );
+            const keys = await redisClient.keys('products:*');
+            if (keys.length > 0) {
+                await redisClient.del(keys);
+                console.log(`Berhasil hapus ${keys.length} cache produk`);
+            }
+
             await client.query('COMMIT');
             return [{order_id: orderRows[0].id, total: totalPrice}];
         } catch (err) {
