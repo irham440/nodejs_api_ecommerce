@@ -38,12 +38,29 @@ const topUp = async ({idUser, amount}) =>{
     );
     if (!result.rows || result.rows.length === 0) throw new Error('user not found for top-up');
     const {saldo, nama} = result.rows[0];
-        // invalidate or update profile cache so subsequent /profile reflects new saldo
+        // update profile cache so subsequent /profile reflects new saldo
         try {
             const key = `${idUser}:getProfil`;
-            await redisClient.del(key);
+            const cached = await redisClient.get(key);
+            let profileObj;
+            if (cached) {
+                try {
+                    profileObj = JSON.parse(cached);
+                } catch (e) {
+                    profileObj = null;
+                }
+            }
+            if (!profileObj) {
+                // create a minimal profile object if cache empty
+                profileObj = { id: idUser, nama, saldo };
+            } else {
+                // update existing cached profile fields
+                profileObj.saldo = saldo;
+                profileObj.nama = nama;
+            }
+            await redisClient.set(key, JSON.stringify(profileObj));
         } catch (err) {
-            console.warn('failed to clear profile cache after topUp', err.message)
+            console.warn('failed to update profile cache after topUp', err.message)
         }
         return {saldo, idUser, nama};
 }
