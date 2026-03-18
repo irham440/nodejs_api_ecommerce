@@ -56,7 +56,7 @@ const transfer = async ({senderId, receiverPhone, amount}) => {
     }
     const sender = result(potongSaldo);
     const receiver = result(tambahSaldo);
-    const key = `${idUser}:getProfil`;
+    const key = `${senderId}:getProfil`;
     const cached = await redisClient.get(key);
     let profileObj;
     if (cached) {
