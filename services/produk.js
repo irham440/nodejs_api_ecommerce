@@ -20,7 +20,7 @@ const getProducts = async ({nama, min_price, max_price}, sort) => {
         );   
         if(result.rows.length === 0) throw new Error("produk tidak ditemukan");
         console.log("dari database")
-        await redisClient.setEx(caheKey, 60, JSON.stringify(result.rows));
+        await redisClient.setEx(caheKey, 3000, JSON.stringify(result.rows));
         return result.rows;
     } catch (err) {
         throw err;
@@ -112,7 +112,9 @@ const pay = async ({orderId}) => {
         );
         await client.query('COMMIT');
         const chacheKey = `profile:${id}`
+        const keyOrders = `orders:${id}`
         await redisClient.del(chacheKey)
+        await redisClient.del(keyOrders)
     } catch (err) {
         await client.query('ROLLBACK');
         throw err;
@@ -149,14 +151,19 @@ const notificationBeli = async ({ idUser, productId, jumlah}) => {
 };    
 
 const getOrder = async ({userId}) => {
+    const key = `orders:${userId}`
+    const cache = await redisClient.get(key)
+    if (cache){
+        console.log("order dari cache")
+        return JSON.parse(cache);
+    }
     try {
-
         const result = await pool.query(
             'SELECT o.id, o.total_price, o.status, oi.product_id, oi.quantity, oi.price, p.name FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN produk p ON oi.product_id = p.id WHERE o.user_id = $1',
             [userId]
         );
         if(result.rows.length === 0) throw new Error("pesanan tidak ditemukan");
-        
+        await redisClient.set(key,JSON.stringify(result.rows), {EX: 3000})
         console.log("dari database")
         return result.rows;
     } catch (err) {

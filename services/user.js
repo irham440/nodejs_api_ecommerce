@@ -84,7 +84,7 @@ const getProfile = async ({id}) => {
     );
     if (user.rows.length === 0) throw new apiError(400, "user tidak ditemukan", {id})
     console.log("dari database")
-    await redisClient.set(chacheKey, JSON.stringify(user.rows[0], {EX: 120}))
+    await redisClient.set(chacheKey, JSON.stringify(user.rows[0], {EX: 3000}))
     return user.rows[0];
   } catch (err) {
     throw err;
